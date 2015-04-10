@@ -1,16 +1,18 @@
 #!/bin/bash
 # Dom Bennett
 # Take BLAST results, output tree
-# Requires: mafft-qinsi, python2.7 and biopython
+# Requires: mafft-qinsi, raxml, python2.7 and biopython
+# run by typing: `sh run.sh >& log.txt &`
 
 # EXECUTABLE PATHS
-$MAFFT='~/bin/mafft-qinsi'
-$RAXML='raxml'
-$PYTHON='/bin/usr/python2.7'
+MAFFT=/home/djb208/bin/mafft-qinsi
+RAXML=/usr/biosoft/bin/raxml
+PYTHON=/usr/local/python/2.7.5/bin/python
 
 # FILES AND FOLDERS
-$ALIGN = pwd/2_alignments/supermatrix.phy
-$TREEOUT = pwd/3_trees
+WD=$pwd
+ALIGN=$WD/2_alignments/supermatrix.phy
+TREEOUT=$WD/3_trees
 
 # SORT SEQUENCES
 $PYTHON python_scripts/sort_sequences.py
@@ -21,11 +23,11 @@ if [ ! -d 2_alignments ]; then
 fi
 echo 'Running MAFFT'
 echo '.... p1'
-$MAFFT p1.fasta > 2_alignments/p1_alignment.fasta
+$MAFFT 1_sequences/p1.fasta > 2_alignments/p1_alignment.fasta
 echo '.... p2'
-$MAFFT p2.fasta > 2_alignments/p2_alignment.fasta
+$MAFFT 1_sequences/p2.fasta > 2_alignments/p2_alignment.fasta
 echo '.... p3'
-$MAFFT p3.fasta > 2_alignments/p3_alignment.fasta
+$MAFFT 1_sequences/p3.fasta > 2_alignments/p3_alignment.fasta
 echo 'Complete'
 
 # COMBINE ALIGNMENTS
