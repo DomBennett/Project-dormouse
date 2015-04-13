@@ -38,5 +38,5 @@ if [ ! -d 3_trees ]; then
   mkdir 3_trees
 fi
 echo 'Running RAXML'
-$RAXML -s $ALIGN -n tree -m GTRCAT -o outgroup -w $TREEOUT
+$RAXML -s $ALIGN -n tree -m GTRCAT -o outgroup -w $TREEOUT -T 2 -p $RANDOM
 echo 'Complete'
