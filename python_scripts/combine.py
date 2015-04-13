@@ -7,6 +7,7 @@ Combine alignments from each pair into single supermatrix
 
 # PACKAGES
 import os
+import re
 from Bio import SeqIO
 from Bio import AlignIO
 
@@ -33,6 +34,18 @@ def readSequences(infile):
             sequences.append(record)
     return(sequences)
 
+
+def trimSequences(sequences):
+    starts = []
+    ends = []
+    for s in sequences:
+        starts.append(re.search('[atcgATCG]', str(s.seq)).start())
+        ends.append(len(s) - re.search('[atcgATCG]', str(s.seq)[::-1]).end())
+    res = []
+    for s in sequences:
+        res.append(s[max(starts):min(ends)])
+    return(res)
+
 # DIRS
 inout_dir = '2_alignments'
 
@@ -40,6 +53,11 @@ inout_dir = '2_alignments'
 p1_seqs = readSequences(os.path.join(inout_dir, 'p1_alignment.fasta'))
 p2_seqs = readSequences(os.path.join(inout_dir, 'p2_alignment.fasta'))
 p3_seqs = readSequences(os.path.join(inout_dir, 'p3_alignment.fasta'))
+
+# TRIM
+p1_seqs = trimSequences(p1_seqs)
+p2_seqs = trimSequences(p2_seqs)
+p3_seqs = trimSequences(p3_seqs)
 
 # MATCH IDS INTO SINGLE DICTIONARY
 sequences = {}
