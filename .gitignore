@@ -3,3 +3,9 @@
 2_alignments/
 3_trees/
 data/
+
+# ignore mac files
+.DS_Store
+
+# python
+*.pyc
