@@ -21,13 +21,11 @@ $PYTHON python_scripts/sort_sequences.py
 if [ ! -d 2_alignments ]; then
   mkdir 2_alignments
 fi
-echo 'Running MAFFT'
-echo '.... p1'
-$MAFFT 1_sequences/p1.fasta > 2_alignments/p1_alignment.fasta
-echo '.... p2'
-$MAFFT 1_sequences/p2.fasta > 2_alignments/p2_alignment.fasta
-echo '.... p3'
-$MAFFT 1_sequences/p3.fasta > 2_alignments/p3_alignment.fasta
+for seq_file in `ls 1_sequences | grep *.fasta`
+do
+  echo "Running MAFFT for $seq_file ...."
+  $MAFFT 1_sequences/$seq_file > 2_alignments/$seq_file_alignment.fasta
+done
 echo 'Complete'
 
 # COMBINE ALIGNMENTS
