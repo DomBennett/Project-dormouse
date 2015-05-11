@@ -47,26 +47,25 @@ def trimSequences(sequences):
     return(res)
 
 # DIRS
-inout_dir = '2_alignments'
-
-# READ
-p1_seqs = readSequences(os.path.join(inout_dir, 'p1_alignment.fasta'))
-p2_seqs = readSequences(os.path.join(inout_dir, 'p2_alignment.fasta'))
-p3_seqs = readSequences(os.path.join(inout_dir, 'p3_alignment.fasta'))
-
-# TRIM
-p1_seqs = trimSequences(p1_seqs)
-p2_seqs = trimSequences(p2_seqs)
-p3_seqs = trimSequences(p3_seqs)
+input_dir = '2_alignments'
+output_dir = '3_supermatrix'
 
 # MATCH IDS INTO SINGLE DICTIONARY
 sequences = {}
-for s in p1_seqs:
-    sp, seqid = s.id.split('__')
-    if seqid in sequences.keys():
-        sequences[seqid]['p1'].append(s)
-    else:
-        sequences[seqid] = {'p1': [s], 'p2': [], 'p3': []}
+alignments = os.listdir(input_dir)
+alignments = [e for e in alignments if re.search('\.fasta$', e)]
+for alignment in alignments:
+    # read
+    seqs = readSequences(os.path.join(input_dir, alignment))
+    # trim
+    # TODO use parts.py to find sequences and put into a single dictionary by ID
+    seqs = trimSequences(seqs)
+    for s in p1_seqs:
+        sp, seqid = s.id.split('__')
+        if seqid in sequences.keys():
+            sequences[seqid]['p1'].append(s)
+        else:
+            sequences[seqid] = {'p1': [s], 'p2': [], 'p3': []}
 
 for s in p2_seqs:
     sp, seqid = s.id.split('__')
