@@ -19,5 +19,5 @@ parts = {'18S_p1': {'ingroup': '18S_p1_930F_Cyclophyllidea.gb',
                     'sample': '28S_p2.fasta',
                     'outfile': '28S_p2.fasta'}}
 
-sample_ids_f = ['sample__930f', 'sample__600f', 'sample__wormA']
-sample_ids_r = ['sample__cestode6', 'sample__A27', 'sample__1270R']
+# part names in form: GENE_PART
+part_names = ['18S_p1', '18S_p2', '18S_p3', '28S_p1', '28S_p2']
