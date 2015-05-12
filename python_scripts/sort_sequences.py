@@ -59,35 +59,38 @@ def getOutgroupSeq(infile):
     else:
         return(None)
 
-# DIRS
-output_dir = '1_sequences'
-if not os.path.isdir(output_dir):
-    os.mkdir(output_dir)
+if __name__ == '__main__':
+    # DIRS
+    output_dir = '1_sequences'
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
 
-input_dir = 'data'
-blast_dir = os.path.join(input_dir, 'BLAST_results')
-sample_dir = os.path.join(input_dir, 'samples')
+    input_dir = 'data'
+    blast_dir = os.path.join(input_dir, 'BLAST_results')
+    sample_dir = os.path.join(input_dir, 'samples')
 
-# PROCESS
-for key in parts.keys():
-    print key
-    print os.path.join(blast_dir, parts[key]['ingroup'])
-    if not os.path.isfile(os.path.join(blast_dir, parts[key]['ingroup'])):
-        next
-    sequences = getIngroupSeqs(os.path.join(blast_dir, parts[key]['ingroup']))
-    # read in GB outgroup sequences
-    outgroup = getOutgroupSeq(os.path.join(blast_dir, parts[key]['outgroup']))
-    if outgroup:
-        sequences.append(outgroup)
-    # read in primer pair samples
-    samples = []
-    with open(os.path.join(sample_dir, parts[key]['sample']), 'rb') as f:
-        for record in SeqIO.parse(f, "fasta"):
-            samples.append(record)
-    # rename as 'sample' and add to sequences_fasta
-    for sequence in samples:
-        sequences.append(getFasta(sequence, name='sample'))
-    # write out as fasta
-    with open(os.path.join(output_dir, parts[key]['outfile']), 'wb') as f:
-        for s in sequences:
-            f.write("{0}\n".format(s))
+    # PROCESS
+    for key in parts.keys():
+        print key
+        print os.path.join(blast_dir, parts[key]['ingroup'])
+        if not os.path.isfile(os.path.join(blast_dir, parts[key]['ingroup'])):
+            next
+        sequences = getIngroupSeqs(os.path.join(blast_dir,
+                                                parts[key]['ingroup']))
+        # read in GB outgroup sequences
+        outgroup = getOutgroupSeq(os.path.join(blast_dir,
+                                               parts[key]['outgroup']))
+        if outgroup:
+            sequences.append(outgroup)
+        # read in primer pair samples
+        samples = []
+        with open(os.path.join(sample_dir, parts[key]['sample']), 'rb') as f:
+            for record in SeqIO.parse(f, "fasta"):
+                samples.append(record)
+        # rename as 'sample' and add to sequences_fasta
+        for sequence in samples:
+            sequences.append(getFasta(sequence, name='sample'))
+        # write out as fasta
+        with open(os.path.join(output_dir, parts[key]['outfile']), 'wb') as f:
+            for s in sequences:
+                f.write("{0}\n".format(s))
