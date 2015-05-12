@@ -24,7 +24,7 @@ fi
 for seq_file in `ls 1_sequences | grep \.fasta`
 do
   echo "Running MAFFT for $seq_file ...."
-  $MAFFT 1_sequences/$seq_file > 2_alignments/$seq_file_alignment.fasta
+  $MAFFT 1_sequences/$seq_file > 2_alignments/$seq_file_alignment.fasta & $seq_file_alignment_log.txt
 done
 echo 'Complete'
 
