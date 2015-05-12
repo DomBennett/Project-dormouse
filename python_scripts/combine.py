@@ -8,12 +8,15 @@ Combine alignments from each pair into single supermatrix
 # PACKAGES
 import os
 import re
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 from Bio import AlignIO
+from parts import parts
+from parts import part_names
 
 # PARAMETERS
-sample_ids_f = ['sample__930f', 'sample__600f', 'sample__wormA']
-sample_ids_r = ['sample__cestode6', 'sample__A27', 'sample__1270R']
+min_parts = 2  # minimum number of sections to include a seqid
 
 
 # FUNCTIONS
@@ -24,18 +27,32 @@ def readSequences(infile):
     sequences = []
     with open(infile, 'rb') as f:
         for record in SeqIO.parse(f, "fasta"):
-            # rename sample r and f ids to share same ID
-            if record.id in sample_ids_f:
-                record.id = 'sample__f'
-                record.description = ''
-            if record.id in sample_ids_r:
-                record.id = 'sample__r'
-                record.description = ''
             sequences.append(record)
     return(sequences)
 
 
+def getPartitions(parts, part_names):
+    """Return partition.txt"""
+    begin = 1
+    end = 0
+    text = ''
+    cgene = part_names[0].split('_')[0]
+    ngene = 0
+    for part in part_names:
+        gene = part.split('_')[0]
+        if cgene == gene:
+            end += parts[part]['length'] + begin - 1
+        else:
+            cgene = gene
+            text += 'DNA, gene{0} = {1}-{2}\n'.\
+                format(ngene, begin, end)
+            ngene += 1
+            begin = end + 1
+    return(text)
+
+
 def trimSequences(sequences):
+    """Return sequences without tail-ends"""
     starts = []
     ends = []
     for s in sequences:
@@ -46,60 +63,95 @@ def trimSequences(sequences):
         res.append(s[max(starts):min(ends)])
     return(res)
 
-# DIRS
-input_dir = '2_alignments'
-output_dir = '3_supermatrix'
 
-# MATCH IDS INTO SINGLE DICTIONARY
-sequences = {}
-alignments = os.listdir(input_dir)
-alignments = [e for e in alignments if re.search('\.fasta$', e)]
-for alignment in alignments:
-    # read
-    seqs = readSequences(os.path.join(input_dir, alignment))
-    # trim
-    # TODO use parts.py to find sequences and put into a single dictionary by ID
-    seqs = trimSequences(seqs)
-    for s in p1_seqs:
-        sp, seqid = s.id.split('__')
-        if seqid in sequences.keys():
-            sequences[seqid]['p1'].append(s)
-        else:
-            sequences[seqid] = {'p1': [s], 'p2': [], 'p3': []}
+def getSeqDict(parts, part_names):
+    """Return dictionary of seq IDs with sequences for each part"""
+    seqdict = {}
+    for key in parts.keys():
+        # read
+        alignment_file = key + '_alignment.fasta'
+        alignment_file = os.path.join(input_dir, alignment_file)
+        if not os.path.isfile(alignment_file):
+            part_names.pop(part_names.index(key))
+            continue
+        seqs = readSequences(alignment_file)
+        # trim
+        seqs = trimSequences(seqs)
+        # add length of trimmed seq to parts dict
+        parts[key]['length'] = len(seqs[0])
+        for s in seqs:
+            sp, seqid = s.id.split('__')
+            if sp == 'sample':
+                seqid = 'sample'
+            if seqid in seqdict.keys():
+                if key in seqdict[seqid].keys():
+                    seqdict[seqid][key].append(s)
+                else:
+                    seqdict[seqid][key] = [s]
+            else:
+                seqdict[seqid] = {key: [s]}
+    return(seqdict, part_names)
 
-for s in p2_seqs:
-    sp, seqid = s.id.split('__')
-    if seqid in sequences.keys():
-        sequences[seqid]['p2'].append(s)
-    else:
-        sequences[seqid] = {'p1': [], 'p2': [s], 'p3': []}
 
-for s in p3_seqs:
-    sp, seqid = s.id.split('__')
-    if seqid in sequences.keys():
-        sequences[seqid]['p3'].append(s)
-    else:
-        sequences[seqid] = {'p1': [], 'p2': [], 'p3': [s]}
+def getSupermatrix(seqdict, parts, part_names):
+    """Return large alignment of each sequence part combined"""
+    supermatrix = []
+    ngaps = 0
+    for key in seqdict:
+        temp_names = seqdict[key].keys()
+        if len(temp_names) >= min_parts:
+            # stick together, always use the first element
+            s = None
+            for part_name in part_names:
+                if part_name in seqdict[key].keys():
+                    ps = seqdict[key][part_name][0]
+                    seqid = ps.id
+                    seqdesc = ps.description
+                else:
+                    # create seqrecord of '-'
+                    ps = SeqRecord(Seq('-' * parts[part_name]['length']))
+                    ps.id = s
+                    ngaps += parts[part_name]['length']
+                if s:
+                    s += ps
+                else:
+                    s = ps
+            # rename outgroup + sample
+            s.id = seqid
+            s.description = seqdesc
+            if key != 'sample':
+                sp, _ = s.id.split('__')
+                if 'outgroup' == sp:
+                    s.id = 'outgroup'
+                    s.description = ''
+            else:
+                s.id = 'sample'
+            supermatrix.append(s)
+    return(supermatrix, ngaps)
 
-# CONSTRUCT SUPERMATRIX
-supermatrix = []
-for key in sequences:
-    if sequences[key]['p1'] and sequences[key]['p2'] and sequences[key]['p3']:
-        # stick together, always use the first element
-        s1 = sequences[key]['p1'][0]
-        s2 = sequences[key]['p2'][0]
-        s3 = sequences[key]['p3'][0]
-        s = s1 + s2 + s3
-        # rename outgroup
-        sp, _ = s.id.split('__')
-        if 'outgroup' == sp:
-            s.id = 'outgroup'
-            s.description = ''
-        supermatrix.append(s)
-
-# OUTPUT
-alignment = AlignIO.MultipleSeqAlignment(supermatrix)
-outfile = os.path.join(inout_dir, 'supermatrix.phy')
-with open(outfile, "w") as f:
-    # write out using PhylipWriter in order to extend id_width
-    AlignIO.PhylipIO.PhylipWriter(f).write_alignment(alignment, id_width=40)
+if __name__ == '__main__':
+    # DIRS
+    input_dir = '2_alignments'
+    output_dir = '3_supermatrix'
+    # MATCH IDS INTO SINGLE DICTIONARY
+    seqdict, part_names = getSeqDict(parts, part_names)
+    # CONSTRUCT SUPERMATRIX
+    supermatrix, ngaps = getSupermatrix(seqdict, parts, part_names)
+    ngaps_psp = float(ngaps)/len(supermatrix)
+    # GET PARTITIONS
+    partition_text = getPartitions(parts, part_names)
+    # OUTPUT
+    alignment = AlignIO.MultipleSeqAlignment(supermatrix)
+    print('Supermatix of [{0}] length and [{1}] species generated with [{2}] \
+gaps per species'.format(alignment.get_alignment_length(), len(alignment),
+                         ngaps_psp))
+    outfile = os.path.join(input_dir, 'supermatrix.phy')
+    with open(outfile, "w") as f:
+        # write out using PhylipWriter in order to extend id_width
+        AlignIO.PhylipIO.PhylipWriter(f).write_alignment(alignment,
+                                                         id_width=40)
+    # OUTPUT PARITIONS
+    if partition_text:
+        outfile = os.path.join(input_dir, 'paritions.txt')
+        with open(outfile, 'w') as file:
+            file.write(partition_text)
