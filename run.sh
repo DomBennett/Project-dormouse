@@ -21,7 +21,7 @@ $PYTHON python_scripts/sort_sequences.py
 if [ ! -d 2_alignments ]; then
   mkdir 2_alignments
 fi
-for seq_file in `ls 1_sequences | grep *.fasta`
+for seq_file in `ls 1_sequences | grep \.fasta`
 do
   echo "Running MAFFT for $seq_file ...."
   $MAFFT 1_sequences/$seq_file > 2_alignments/$seq_file_alignment.fasta
