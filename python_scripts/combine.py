@@ -37,9 +37,10 @@ def getPartitions(parts, part_names):
     end = 0
     text = ''
     cgene = part_names[0].split('_')[0]
-    ngene = 0
+    ngene = 1
     for part in part_names:
         gene = part.split('_')[0]
+        print gene
         if cgene == gene:
             end += parts[part]['length'] + begin - 1
         else:
@@ -48,6 +49,10 @@ def getPartitions(parts, part_names):
                 format(ngene, begin, end)
             ngene += 1
             begin = end + 1
+    if ngene > 1:
+        end += parts[part]['length']
+        text += 'DNA, gene{0} = {1}-{2}\n'.\
+            format(ngene, begin, end)
     return(text)
 
 
@@ -69,9 +74,11 @@ def getSeqDict(parts, part_names):
     seqdict = {}
     for key in parts.keys():
         # read
-        alignment_file = key + '_alignment.fasta'
+        alignment_file = key + '.fasta'
         alignment_file = os.path.join(input_dir, alignment_file)
+        print alignment_file
         if not os.path.isfile(alignment_file):
+            print 'not file'
             part_names.pop(part_names.index(key))
             continue
         seqs = readSequences(alignment_file)
@@ -134,9 +141,12 @@ if __name__ == '__main__':
     input_dir = '2_alignments'
     output_dir = '3_supermatrix'
     # MATCH IDS INTO SINGLE DICTIONARY
+    print part_names
     seqdict, part_names = getSeqDict(parts, part_names)
     # CONSTRUCT SUPERMATRIX
     supermatrix, ngaps = getSupermatrix(seqdict, parts, part_names)
+    print len(supermatrix)
+    print ngaps
     ngaps_psp = float(ngaps)/len(supermatrix)
     # GET PARTITIONS
     partition_text = getPartitions(parts, part_names)
@@ -149,9 +159,9 @@ gaps per species'.format(alignment.get_alignment_length(), len(alignment),
     with open(outfile, "w") as f:
         # write out using PhylipWriter in order to extend id_width
         AlignIO.PhylipIO.PhylipWriter(f).write_alignment(alignment,
-                                                         id_width=40)
+                                                         id_width=45)
     # OUTPUT PARITIONS
     if partition_text:
-        outfile = os.path.join(input_dir, 'paritions.txt')
+        outfile = os.path.join(input_dir, 'partitions.txt')
         with open(outfile, 'w') as file:
             file.write(partition_text)
