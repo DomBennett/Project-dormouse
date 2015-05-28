@@ -30,7 +30,7 @@ fi
 for SF in `ls 1_sequences | grep \.fasta`
 do
   echo ".... $SF"
-  $MAFFT 1_sequences/$seq_file > 2_alignments/${seq_file}_alignment.fasta 2> 2_alignments/${SF%.fasta}_log.txt
+  $MAFFT 1_sequences/$SF > 2_alignments/${SF%.fasta}_alignment.fasta 2> 2_alignments/${SF%.fasta}_log.txt
 done
 echo 'Complete\n'
 
