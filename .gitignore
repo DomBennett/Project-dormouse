@@ -3,6 +3,7 @@
 2_alignments/
 3_trees/
 data/
+*log*
 
 # ignore mac files
 .DS_Store
