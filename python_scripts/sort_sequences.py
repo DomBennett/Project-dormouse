@@ -8,7 +8,7 @@ Bring BLAST results and primer pairs together.
 
 # PARAMETERS
 selection = 0  # index of the outgroup seq
-exclude = ['LM405059.1']  # list of Accessions to ignore
+exclude = ['LM405059.1', 'LM398387.1']  # list of Accessions to ignore, scaffold genes
 
 # PACKAGES
 import os
@@ -88,9 +88,7 @@ if __name__ == '__main__':
 
     # PROCESS
     for key in parts.keys():
-        print key
         gene = key.split('_')[0]
-        print os.path.join(blast_dir, parts[key]['ingroup'])
         if not os.path.isfile(os.path.join(blast_dir, parts[key]['ingroup'])):
             next
         sequences = getIngroupSeqs(os.path.join(blast_dir,
