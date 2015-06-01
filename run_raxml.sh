@@ -22,4 +22,3 @@ $RAXML -n S3 -m GTRCAT -p $RANDOM -f b -t ${TREEOUT}/RAxML_bestTree.S1 -z ${TREE
 echo 'Complete\n'
 
 echo Finished: $(date)
-

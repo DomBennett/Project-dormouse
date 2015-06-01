@@ -41,16 +41,18 @@ def getPartitions(parts, part_names):
     for part in part_names:
         gene = part.split('_')[0]
         print gene
+        print begin
+        print end
         if cgene == gene:
-            end += parts[part]['length'] + begin - 1
+            end += parts[part]['length']
         else:
             cgene = gene
             text += 'DNA, gene{0} = {1}-{2}\n'.\
                 format(ngene, begin, end)
             ngene += 1
             begin = end + 1
+            end += parts[part]['length']
     if ngene > 1:
-        end += parts[part]['length']
         text += 'DNA, gene{0} = {1}-{2}\n'.\
             format(ngene, begin, end)
     return(text)
@@ -153,8 +155,8 @@ if __name__ == '__main__':
     # OUTPUT
     alignment = AlignIO.MultipleSeqAlignment(supermatrix)
     print('Supermatix of [{0}] length and [{1}] species generated with [{2}] \
-gaps per species'.format(alignment.get_alignment_length(), len(alignment),
-                         ngaps_psp))
+    gaps per species'.format(alignment.get_alignment_length(), len(alignment),
+                             ngaps_psp))
     outfile = os.path.join(input_dir, 'supermatrix.phy')
     with open(outfile, "w") as f:
         # write out using PhylipWriter in order to extend id_width
