@@ -8,14 +8,11 @@ echo Started: $(date)
 
 # EXECUTABLE PATHS
 MAFFT=/home/djb208/bin/mafft-qinsi
-RAXML=$(which raxml)
 PYTHON=$(which python)
 
 # FILES AND FOLDERS
 WD=$(pwd)
 ALIGN=${WD}/2_alignments/supermatrix.phy
-TREEOUT=${WD}/3_trees
-PART=${WD}/2_alignments/partitions.txt
 
 # SORT SEQUENCES
 echo '\n1. Sorting sequences ....'
@@ -44,9 +41,7 @@ if [ ! -d 3_trees ]; then
   mkdir 3_trees
 fi
 echo '4. Running RAXML with bootstrap'
-$RAXML -n S1 -m GTRCAT -p $RANDOM -# 100 -s $ALIGN -T 2 -q $PART  -o outgroup -w $TREEOUT
-$RAXML -n S2 -m GTRCAT -p $RANDOM -b $RANDOM -# 100 -s $ALIGN -T 2 -q $PART -o outgroup -w $TREEOUT
-$RAXML -n S3 -m GTRCAT -p $RANDOM -f b -t ${TREEOUT}/RAxML_bestTree.S1 -z ${TREEOUT}/RAxML_bootstrap.S2 -w $TREEOUT
+$(run_raxml.sh)
 echo 'Complete\n'
 
 echo Finished: $(date)

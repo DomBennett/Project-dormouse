@@ -4,6 +4,7 @@
 3_trees/
 data/
 *log*
+archive/
 
 # ignore mac files
 .DS_Store

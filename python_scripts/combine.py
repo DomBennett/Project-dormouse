@@ -16,7 +16,7 @@ from parts import parts
 from parts import part_names
 
 # PARAMETERS
-min_parts = 2  # minimum number of sections to include a seqid
+min_parts = 3  # minimum number of sections to include a seqid
 
 
 # FUNCTIONS
