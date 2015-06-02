@@ -8,15 +8,23 @@ Combine alignments from each pair into single supermatrix
 # PACKAGES
 import os
 import re
+import sys
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 from Bio import AlignIO
-from parts import parts
+from parts import parts as all_parts
 from parts import part_names
 
 # PARAMETERS
-min_parts = 3  # minimum number of sections to include a seqid
+# TODO: move this into new script called parameters.py
+min_parts = 2  # minimum number of sections to include a seqid
+if min_parts > len(part_names):
+    sys.exit('min_parts is greater than part_names')
+# create parts dict from all_parts and part_names
+parts = {}
+for part in part_names:
+    parts[part] = all_parts[part]
 
 
 # FUNCTIONS

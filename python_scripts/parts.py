@@ -20,4 +20,4 @@ parts = {'18S_p1': {'ingroup': '18S_p1_930F_Cyclophyllidea.gb',
                     'outfile': '28S_p2.fasta'}}
 
 # part names in form: GENE_PART
-part_names = ['18S_p1', '18S_p2', '18S_p3', '28S_p1', '28S_p2']
+part_names = ['18S_p1', '18S_p2', '18S_p3']#, '28S_p1', '28S_p2']
