@@ -9,16 +9,18 @@ Combine alignments from each pair into single supermatrix
 import os
 import re
 import sys
+import random
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 from Bio import AlignIO
-from parts import parts as all_parts
-from parts import part_names
+from parameters import parts as all_parts
+from parameters import part_names
+from parameters import min_parts
+from parameters import byid
+from parameters import normalise_name
 
-# PARAMETERS
-# TODO: move this into new script called parameters.py
-min_parts = 2  # minimum number of sections to include a seqid
+# PARAMETER PARSE
 if min_parts > len(part_names):
     sys.exit('min_parts is greater than part_names')
 # create parts dict from all_parts and part_names
@@ -36,6 +38,12 @@ def readSequences(infile):
     with open(infile, 'rb') as f:
         for record in SeqIO.parse(f, "fasta"):
             sequences.append(record)
+    if normalise_name:
+        for s in sequences:
+            sp, seqid = s.id.split('__')
+            sp = re.split('_', sp)[0:2]
+            sp = '_'.join(sp)
+            s.id = sp + '__' + seqid
     return(sequences)
 
 
@@ -100,13 +108,17 @@ def getSeqDict(parts, part_names):
             sp, seqid = s.id.split('__')
             if sp == 'sample':
                 seqid = 'sample'
-            if seqid in seqdict.keys():
-                if key in seqdict[seqid].keys():
-                    seqdict[seqid][key].append(s)
-                else:
-                    seqdict[seqid][key] = [s]
+            if byid:
+                group_factor = seqid
             else:
-                seqdict[seqid] = {key: [s]}
+                group_factor = sp
+            if group_factor in seqdict.keys():
+                if key in seqdict[group_factor].keys():
+                    seqdict[group_factor][key].append(s)
+                else:
+                    seqdict[group_factor][key] = [s]
+            else:
+                seqdict[group_factor] = {key: [s]}
     return(seqdict, part_names)
 
 
@@ -117,11 +129,11 @@ def getSupermatrix(seqdict, parts, part_names):
     for key in seqdict:
         temp_names = seqdict[key].keys()
         if len(temp_names) >= min_parts:
-            # stick together, always use the first element
+            # stick together, use random seq
             s = None
             for part_name in part_names:
                 if part_name in seqdict[key].keys():
-                    ps = seqdict[key][part_name][0]
+                    ps = random.sample(seqdict[key][part_name], 1)[0]
                     seqid = ps.id
                     seqdesc = ps.description
                 else:
@@ -140,6 +152,10 @@ def getSupermatrix(seqdict, parts, part_names):
                 sp, _ = s.id.split('__')
                 if 'outgroup' == sp:
                     s.id = 'outgroup'
+                    s.description = ''
+                if not byid:
+                    # if byspecies, than rename sequence to just its sp name
+                    s.id = sp
                     s.description = ''
             else:
                 s.id = 'sample'
