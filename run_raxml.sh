@@ -17,9 +17,9 @@ PART=${WD}/2_alignments/partitions.txt
 
 # add -o outgroup and -q $PART if need be
 echo '4. Running RAXML with bootstrap'
-$RAXML -n S1 -m GTRCAT -p $RANDOM -# 100 -s $ALIGN -w $TREEOUT
-$RAXML -n S2 -m GTRCAT -p $RANDOM -b $RANDOM -# 100 -s $ALIGN -w $TREEOUT
-$RAXML -n S3 -m GTRCAT -p $RANDOM -f b -t ${TREEOUT}RAxML_bestTree.S1 -z ${TREEOUT}RAxML_bootstrap.S2 -w $TREEOUT
+$RAXML -n S1 -m GTRCAT -p $RANDOM -# 2 -s $ALIGN -w $TREEOUT -q $PART -o outgroup -T 2
+$RAXML -n S2 -m GTRCAT -p $RANDOM -b $RANDOM -# 2 -s $ALIGN -w $TREEOUT -q $PART -o outgroup -T 2
+$RAXML -n S3 -m GTRCAT -p $RANDOM -f b -t ${TREEOUT}RAxML_bestTree.S1 -z ${TREEOUT}RAxML_bootstrap.S2 -w $TREEOUT -T 2
 echo 'Complete\n'
 
 echo Finished: $(date)
