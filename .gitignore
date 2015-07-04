@@ -5,9 +5,14 @@
 data/
 *log*
 archive/
+final_trees/
 
 # ignore mac files
 .DS_Store
 
 # python
 *.pyc
+.Rproj.user
+.RData
+.Rhistory
+*.Rproj
