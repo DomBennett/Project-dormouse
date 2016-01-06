@@ -6,10 +6,10 @@
 library (ape)
 
 # FUNCTIONS
-addSupportIndicators <- function (support.thresh=95, pch=19, col='black') {
+addSupportIndicators <- function (support.thresh=95, pch=19, ...) {
   # Add node dots to indicate support value
   nodes <- which(as.numeric (tree$node.label) > support.thresh) + length (tree$tip.label)
-  nodelabels(node=nodes, pch=pch, col=col)
+  nodelabels(node=nodes, pch=19, ...) 
 }
 
 removeUnsupportedNodes <- function (tree, support.thresh=50) {
@@ -37,6 +37,8 @@ wd <- 'final_trees'
 treefiles <- list.files (wd, pattern='\\.tre')
 for (f in treefiles) {
   tree <- read.tree(file.path (wd, f))
+  print(f)
+  print(length(tree$tip.label))
   tree <- removeUnsupportedNodes (tree)
   # re-root and drop outgroup
   if ('outgroup' %in% tree$tip.label) {
@@ -47,17 +49,26 @@ for (f in treefiles) {
     tree <- root (tree, node=76)
   }
   # rename and colour sample
-  i <- which (tree$tip.label == 'sample')
-  tree$tip.label[i] <- 'Dormouse_sample'
-  tip.colours <- rep ('black', length (tree$tip.label))
-  tip.colours[i] <- 'firebrick3'
+  tip.labels <- sub("__", " (", tree$tip.label)
+  tip.labels <- sub("_", " ", tip.labels)
+  tip.labels <- sub("$", ")", tip.labels)
+  tip.labels <- gsub("_", ", ", tip.labels)
+  tree$tip.label <- tip.labels
+  i <- which (grepl('sample', tree$tip.label))
+  tree$tip.label[i] <- '"2009 captive dormouse sample"'
+  tip.sizes <- rep (1.5, length (tree$tip.label))
+  tip.sizes[i] <- 1.7
+  tip.cols <- rep ('gray15', length (tree$tip.label))
+  tip.cols[i] <- "black"
   # plot
   filename <- paste0 (sub ('\\.tre', '', f), '.pdf')
-  pdf (file.path (wd, filename), h=21, w=14)
-  plot (tree, tip.color=tip.colours)
-  addSupportIndicators (support.thresh=75, pch=19, col='grey65')
-  addSupportIndicators (support.thresh=90, pch=19, col='grey30')
-  addSupportIndicators ()
+  pdf (file.path (wd, filename), h=30, w=14)
+  plot (tree, cex=tip.sizes, lwd=2, tip.color=tip.cols)
+  addSupportIndicators (support.thresh=75, cex=1.5)
+  addSupportIndicators (support.thresh=75, col="white")
+  addSupportIndicators (support.thresh=90, cex=1.5)
+  addSupportIndicators (support.thresh=90, col='grey')
+  addSupportIndicators (cex=1.5)
   axisPhylo()
   dev.off()
 }
