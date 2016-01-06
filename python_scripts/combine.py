@@ -20,6 +20,7 @@ from parameters import min_parts
 from parameters import byid
 from parameters import normalise_name
 
+
 # PARAMETER PARSE
 if min_parts > len(part_names):
     sys.exit('min_parts is greater than part_names')
@@ -131,11 +132,13 @@ def getSupermatrix(seqdict, parts, part_names):
         if len(temp_names) >= min_parts:
             # stick together, use random seq
             s = None
+            seqids = []
             for part_name in part_names:
                 if part_name in seqdict[key].keys():
                     ps = random.sample(seqdict[key][part_name], 1)[0]
-                    seqid = ps.id
-                    seqdesc = ps.description
+                    sp, psid = ps.id.split('__')
+                    if psid not in seqids:
+                        seqids.append(psid)
                 else:
                     # create seqrecord of '-'
                     ps = SeqRecord(Seq('-' * parts[part_name]['length']))
@@ -146,16 +149,16 @@ def getSupermatrix(seqdict, parts, part_names):
                 else:
                     s = ps
             # rename outgroup + sample
-            s.id = seqid
-            s.description = seqdesc
+            sp = re.sub("_sp.*$", "", sp)
+            sp = re.sub("_cf.*$", "", sp)
+            if len(seqids) == 1:
+                s.id = sp + '__' + seqids[0]
+            else:
+                s.id = sp + '__' + "_".join(seqids)
+            s.description = ""
             if key != 'sample':
-                sp, _ = s.id.split('__')
                 if 'outgroup' == sp:
                     s.id = 'outgroup'
-                    s.description = ''
-                if not byid:
-                    # if byspecies, than rename sequence to just its sp name
-                    s.id = sp
                     s.description = ''
             else:
                 s.id = 'sample'
@@ -185,7 +188,7 @@ if __name__ == '__main__':
     with open(outfile, "w") as f:
         # write out using PhylipWriter in order to extend id_width
         AlignIO.PhylipIO.PhylipWriter(f).write_alignment(alignment,
-                                                         id_width=45)
+                                                         id_width=100)
     # OUTPUT PARITIONS
     if partition_text:
         outfile = os.path.join(input_dir, 'partitions.txt')
